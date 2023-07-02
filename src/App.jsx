@@ -9,105 +9,127 @@ import './App.scss';
 
 function App() {
   // React Hooks
-  const [searchHistory, setSearchHistory] = useState([]);
-  const [searchValue, setSearchValue] = useState('');
-  const [error, setError] = useState('');
-  const [curWeatherData, setCurWeatherData] = useState({ temp: 30, temp_max: 30, temp_min: 30, humidity: 50, city: 'Singapore', country: 'SG', weather: 'Clouds', curDateStr: ''})
-  
-  //   main: {
-  //     temp: 0,
-  //     temp_max: 0,
-  //     temp_min: 0,
-  //     humidity: 0
-  //   }, 
-  //   name: '',
-  //   sys: {
-  //     country: ''
-  //   }, 
-  //   weather: [{main: ''}]
-  // });
+  const [searchHistory, setSearchHistory] = useState([]); // Stores list of search history
+  const [searchValue, setSearchValue] = useState(''); // text in search bar
+  const [error, setError] = useState(''); // Error Message
+  const [curWeatherData, setCurWeatherData] = useState({
+    temp: 30,
+    temp_max: 30,
+    temp_min: 30,
+    humidity: 50,
+    city: 'Singapore',
+    country: 'SG',
+    weather: 'Clouds',
+    curDateStr: '',
+  });
 
-  const searchHistoryData = [
-    { country: 'Johor, MY', date: '01-09-2022 09:40am' },
-    { country: 'Osaka, JP', date: '01-09-2022 09:40am' },
-    { country: 'Seoul, KR', date: '01-09-2022 09:40am' },
-  ];
-
-  // Fetch singapore weather and display when the webpage is first accessed
+  // Fetch singapore weather data and display when the webpage is first loaded
   useEffect(() => {
-    axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${curWeatherData.city}&appid=${import.meta.env.VITE_API_KEY}&units=metric`)
-    .then(({data}) => {
-      // handle success
-      setError('');
-      setCurWeatherData({temp: data.main.temp, temp_max: data.main.temp_max, temp_min: data.main.temp_min, humidity: data.main.humidity, city: data.name, country: data.sys.country, weather: data.weather[0].main, curDateStr: getCurrentDateStr()})
-    })
-    .catch((error) => {
-      // handle error
-      if (error.response.status === 404) {
-        setError('Country/City cannot be found!');
-      }
-      
-    })
-    .finally(() => {
-      // always executed
-    });
-  }, [])
-
-  const fetchData = (cityCountry, shdAddToSearchHistory) => {
-    axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${cityCountry}&appid=${import.meta.env.VITE_API_KEY}&units=metric`)
-      .then(({data}) => {
+    axios
+      .get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${curWeatherData.city}&appid=${
+          import.meta.env.VITE_API_KEY
+        }&units=metric`
+      )
+      .then(({ data }) => {
+        // Runs if status returns 200
+        setCurWeatherData({
+          temp: data.main.temp,
+          temp_max: data.main.temp_max,
+          temp_min: data.main.temp_min,
+          humidity: data.main.humidity,
+          city: data.name,
+          country: data.sys.country,
+          weather: data.weather[0].main,
+          curDateStr: getCurrentDateStr(),
+        });
         setError('');
-        setCurWeatherData({temp: data.main.temp, temp_max: data.main.temp_max, temp_min: data.main.temp_min, humidity: data.main.humidity, city: data.name, country: data.sys.country, weather: data.weather[0].main, curDateStr: getCurrentDateStr()});
-        shdAddToSearchHistory && addToSearchHistory({city: data.name, country: data.sys.country, curDateStr: getCurrentDateStr()});
       })
       .catch((error) => {
-        // handle error
+        // handle errors
         if (error.response.status === 404) {
           setError('Country/City cannot be found!');
         }
-      })
-      .finally(() => {
-        // always executed
       });
-  }
-  
+  }, []);
+
+  const fetchData = (cityCountry, shdAddToSearchHistory) => {
+    axios
+      .get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${cityCountry}&appid=${
+          import.meta.env.VITE_API_KEY
+        }&units=metric`
+      )
+      .then(({ data }) => {
+        // Runs if status returns 200
+        setCurWeatherData({
+          temp: data.main.temp,
+          temp_max: data.main.temp_max,
+          temp_min: data.main.temp_min,
+          humidity: data.main.humidity,
+          city: data.name,
+          country: data.sys.country,
+          weather: data.weather[0].main,
+          curDateStr: getCurrentDateStr(),
+        });
+        setError('');
+        shdAddToSearchHistory &&
+          addToSearchHistory({ city: data.name, country: data.sys.country, curDateStr: getCurrentDateStr() });
+      })
+      .catch((error) => {
+        // handle errors
+        if (error.response.status === 404) {
+          setError('Country/City cannot be found!');
+        }
+      });
+  };
+
+  const addToSearchHistory = ({ city, country, curDateStr }) => {
+    setSearchHistory((prevState) => [{ city, country, curDateStr }, ...prevState]);
+  };
+
+  // ==================================================
+  // onClick handler functions
+  // ==================================================
 
   const handleOnClickSearchBarButton = () => {
     if (searchValue !== '') {
       // Fetch current weather data
       fetchData(searchValue, true);
     }
-  }
+  };
 
   const handleOnClickSearchHistoryButton = (index) => {
     // obtain the city to fetch
-    console.log("click")
+    console.log('click');
     const cityToFetch = searchHistory[index].city;
     fetchData(cityToFetch, false);
-  }
-
-  const addToSearchHistory = ({city, country, curDateStr}) => {
-    // setSearchHistory((prevList) => prevList.insert(0, {city, country, curDateStr}));
-    setSearchHistory(prevState => [{city, country, curDateStr}, ...prevState]);
-  }
+  };
 
   const handleOnClickDeleteButton = (index) => {
-    setSearchHistory(prevState => (prevState.filter((item, i)=>{
-      if(index != i){
-        return item;
-      }
-    })))
-  }
+    setSearchHistory((prevState) =>
+      prevState.filter((item, i) => {
+        if (index != i) {
+          return item;
+        }
+      })
+    );
+  };
 
   return (
     <div className='app'>
       <div className='main-container'>
         <div className='search-container'>
-          <div className='search-box' style={{width:"100%"}}>
-            <div className='search-label sm-text' style={{ margin: '0px' , width:"98.5%"}}>
+          <div className='search-box' style={{ width: '100%' }}>
+            <div className='search-label sm-text' style={{ margin: '0px', width: '98.5%' }}>
               Country / City
             </div>
-            <input type='text' className='search-bar' style={{width:"98.5%", padding:"4px 0px 0px 8px"}} onChange={(e) => setSearchValue(e.target.value)} />
+            <input
+              type='text'
+              className='search-bar'
+              style={{ width: '98.5%', padding: '0px 0px 0px 8px' }}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
             <div className='error md-text'>{error}</div>
           </div>
 
@@ -121,14 +143,22 @@ function App() {
             <div className='weather-container-left'>
               <div className='md-text'>Today&apos;s Weather</div>
               <div className='lg-text'>{`${roundTempToNearestDegree(curWeatherData.temp)}°`}</div>
-              <div className='md-text'>{
-              `H: ${roundTempToNearestDegree(curWeatherData.temp_max)}°
-              L: ${roundTempToNearestDegree(curWeatherData.temp_min)}°`
-              }</div>
+              <div className='md-text'>{`H: ${roundTempToNearestDegree(curWeatherData.temp_max)}°
+              L: ${roundTempToNearestDegree(curWeatherData.temp_min)}°`}</div>
               <div className='md-text'>{`${curWeatherData.city}, ${curWeatherData.country}`}</div>
             </div>
-            <div style={{position: 'absolute',float: 'right',zIndex: 10,marginLeft: 'auto', right: '64px',top: '120px'}}>
-            <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' /></div>
+            <div
+              style={{
+                position: 'absolute',
+                float: 'right',
+                zIndex: 10,
+                marginLeft: 'auto',
+                right: '64px',
+                top: '120px',
+              }}
+            >
+              <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' />
+            </div>
             <div className='weather-container-right'>
               {/* <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' /> */}
               <div className='weather-right'>
@@ -142,22 +172,24 @@ function App() {
           <div className='search-history-container'>
             <div className='md-text'>Search History</div>
             <br />
-            {searchHistory.map((item, index) => {
-              return (
-                <div className='search-history' key={index}>
-                  <div style={{ width: '-webkit-fill-available' }}>
-                    <div className='md-text'>{`${item.city}, ${item.country}`}</div>
-                    <div className='sm-text'>{item.date}</div>
+            <div className='scroll-container'>
+              {searchHistory.map((item, index) => {
+                return (
+                  <div className='search-history' key={index}>
+                    <div style={{ width: '-webkit-fill-available' }}>
+                      <div className='md-text'>{`${item.city}, ${item.country}`}</div>
+                      <div className='sm-text'>{item.curDateStr}</div>
+                    </div>
+                    <button className='hollow-cirle' onClick={() => handleOnClickSearchHistoryButton(index)}>
+                      <AiOutlineSearch color='rgba(255, 255, 255, 0.4)' size={20} />
+                    </button>
+                    <button className='hollow-cirle' onClick={() => handleOnClickDeleteButton(index)}>
+                      <MdDelete color='rgba(255, 255, 255, 0.4)' size={20} />
+                    </button>
                   </div>
-                  <button className='hollow-cirle' onClick={()=>handleOnClickSearchHistoryButton(index)}>
-                    <AiOutlineSearch color='rgba(255, 255, 255, 0.4)' size={20} style={{top: '6px', position:'relative', left:'6px' }}/>
-                  </button>
-                  <div className='hollow-cirle' onClick={()=>handleOnClickDeleteButton(index)}>
-                    <MdDelete color='rgba(255, 255, 255, 0.4)' size={20} style={{top: '6px', position:'relative', left:'6px' }}/>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

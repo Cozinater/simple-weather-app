@@ -42,7 +42,7 @@
 } */
 
 .main-container {
-  margin: 20px 0px;
+  padding-top: 20px;
   min-width: 300px;
   // max-width: 1200px;
 
@@ -96,7 +96,8 @@
   background: rgba(26, 26, 26, 0.3);
   border-radius: 20px 20px 0px 0px;
   padding: 24px;
-  height: 600px;
+  padding-bottom: 0px;
+  height: calc(100vh - 212px);
 
   .weather-container {
     display: flex;
@@ -127,6 +128,14 @@
     border-radius: 20px 20px 0px 0px;
     padding: 16px;
     margin-top: 12px;
+    height: calc(100vh - 387px);
+    padding-right: 4px;
+
+    .scroll-container {
+      height: calc(100vh - 430px);
+      overflow: scroll;
+      padding-right: 12px;
+    }
 
     .search-history {
       display: flex;
