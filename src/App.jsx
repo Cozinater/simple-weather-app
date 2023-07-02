@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 // import reactLogo from './assets/react.svg';
 // import viteLogo from '/vite.svg';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { MdDelete } from 'react-icons/md';
-import { roundTempToNearestDegree, getCurrentDateStr } from './utils/commonFunc';
+import { roundTempToNearestDegree, getCurrentDateStr } from './utils/helperFunctions';
 import './App.scss';
 
 function App() {
   // React Hooks
-  // const [count, setCount] = useState(0);
-  //const [searchValue, setSearchValue] = useState();
-  const [curDateStr, setCurDateStr] = useState(getCurrentDateStr());
-  const [curWeatherData, setCurWeatherData] = useState({ temp: 30, temp_max: 30, temp_min: 30, humidity: 50, city: 'Singapore', country: 'SG', weather: 'Clouds'})
+  const [searchHistory, setSearchHistory] = useState([]);
+  const [searchValue, setSearchValue] = useState('');
+  const [error, setError] = useState('');
+  const [curWeatherData, setCurWeatherData] = useState({ temp: 30, temp_max: 30, temp_min: 30, humidity: 50, city: 'Singapore', country: 'SG', weather: 'Clouds', curDateStr: ''})
+  
   //   main: {
   //     temp: 0,
   //     temp_max: 0,
@@ -32,87 +33,85 @@ function App() {
     { country: 'Seoul, KR', date: '01-09-2022 09:40am' },
   ];
 
-  // const curWeatherData = [
-  //   {
-  //     coord: 
-  //       {
-  //         lon:-0.1257,lat:51.5085
-  //       },
-  //     weather: [
-  //       {
-  //         id: 800,
-  //         main:"Clear",
-  //         description:"clear sky",
-  //         icon:"01d"
-  //       }],
-  //       base:"stations",
-  //       main:
-  //       {
-  //         temp:291.12,
-  //         feels_like:290.49,
-  //         temp_min:289.47,
-  //         temp_max:292.62,
-  //         pressure:1011,
-  //         humidity:58
-  //       },
-  //       "visibility":10000,
-  //       "wind":{"speed":4.63,"deg":230},
-  //       "clouds":{"all":7},
-  //       "dt":1688286903,
-  //       "sys":{"type":2,"id":2075535,"country":"GB","sunrise":1688269674,"sunset":1688329243},
-  //       "timezone":3600,
-  //       "id":2643743,
-  //       "name":"London",
-  //       "cod":200
-  //     }
-  // ]
-
-  const handleOnClickSearchButton = (e) => {
-    // Fetch current weather data
-    axios.get(`https://api.openweathermap.org/data/2.5/weather?q=london&appid=${import.meta.env.VITE_API_KEY}&units=metric`)
+  // Fetch singapore weather and display when the webpage is first accessed
+  useEffect(() => {
+    axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${curWeatherData.city}&appid=${import.meta.env.VITE_API_KEY}&units=metric`)
     .then(({data}) => {
       // handle success
-      setCurWeatherData({temp: data.main.temp, temp_max: data.main.temp_max, temp_min: data.main.temp_min, humidity: data.main.humidity, city: data.name, country: data.sys.country, weather: data.weather[0].main})
-      console.log(data)
-      setCurDateStr(getCurrentDateStr());
+      setError('');
+      setCurWeatherData({temp: data.main.temp, temp_max: data.main.temp_max, temp_min: data.main.temp_min, humidity: data.main.humidity, city: data.name, country: data.sys.country, weather: data.weather[0].main, curDateStr: getCurrentDateStr()})
     })
     .catch((error) => {
       // handle error
-      console.log(error);
+      if (error.response.status === 404) {
+        setError('Country/City cannot be found!');
+      }
+      
     })
     .finally(() => {
       // always executed
     });
+  }, [])
+
+  const fetchData = (cityCountry, shdAddToSearchHistory) => {
+    axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${cityCountry}&appid=${import.meta.env.VITE_API_KEY}&units=metric`)
+      .then(({data}) => {
+        setError('');
+        setCurWeatherData({temp: data.main.temp, temp_max: data.main.temp_max, temp_min: data.main.temp_min, humidity: data.main.humidity, city: data.name, country: data.sys.country, weather: data.weather[0].main, curDateStr: getCurrentDateStr()});
+        shdAddToSearchHistory && addToSearchHistory({city: data.name, country: data.sys.country, curDateStr: getCurrentDateStr()});
+      })
+      .catch((error) => {
+        // handle error
+        if (error.response.status === 404) {
+          setError('Country/City cannot be found!');
+        }
+      })
+      .finally(() => {
+        // always executed
+      });
+  }
+  
+
+  const handleOnClickSearchBarButton = () => {
+    if (searchValue !== '') {
+      // Fetch current weather data
+      fetchData(searchValue, true);
+    }
+  }
+
+  const handleOnClickSearchHistoryButton = (index) => {
+    // obtain the city to fetch
+    console.log("click")
+    const cityToFetch = searchHistory[index].city;
+    fetchData(cityToFetch, false);
+  }
+
+  const addToSearchHistory = ({city, country, curDateStr}) => {
+    // setSearchHistory((prevList) => prevList.insert(0, {city, country, curDateStr}));
+    setSearchHistory(prevState => [{city, country, curDateStr}, ...prevState]);
+  }
+
+  const handleOnClickDeleteButton = (index) => {
+    setSearchHistory(prevState => (prevState.filter((item, i)=>{
+      if(index != i){
+        return item;
+      }
+    })))
   }
 
   return (
     <div className='app'>
       <div className='main-container'>
-        {/* <div>
-        <a href='https://vitejs.dev' target='_blank'>
-          <img src={viteLogo} className='logo' alt='Vite logo' />
-        </a>
-        <a href='https://react.dev' target='_blank'>
-          <img src={reactLogo} className='logo react' alt='React logo' />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className='card'>
-        <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className='read-the-docs'>Click on the Vite and React logos to learn more</p> */}
         <div className='search-container'>
-          <div className='search-box'>
-            <div className='search-label sm-text' style={{ margin: '0px' }}>
-              Country
+          <div className='search-box' style={{width:"100%"}}>
+            <div className='search-label sm-text' style={{ margin: '0px' , width:"98.5%"}}>
+              Country / City
             </div>
-            <input type='text' className='search-bar' />
+            <input type='text' className='search-bar' style={{width:"98.5%", padding:"4px 0px 0px 8px"}} onChange={(e) => setSearchValue(e.target.value)} />
+            <div className='error md-text'>{error}</div>
           </div>
 
-          <button className='search-button' onClick={handleOnClickSearchButton}>
+          <button className='search-button' onClick={handleOnClickSearchBarButton}>
             <AiOutlineSearch color='white' size={25} />
           </button>
         </div>
@@ -133,7 +132,7 @@ function App() {
               <div className='weather-right'>
                 <div className='md-text'>{curWeatherData.weather}</div>
                 <div className='md-text'>{`Humidity: ${curWeatherData.humidity}%`}</div>
-                <div className='md-text'>{curDateStr}</div>
+                <div className='md-text'>{curWeatherData.curDateStr}</div>
               </div>
             </div>
           </div>
@@ -141,17 +140,17 @@ function App() {
           <div className='search-history-container'>
             <div className='md-text'>Search History</div>
             <br />
-            {searchHistoryData.map((item, i) => {
+            {searchHistory.map((item, index) => {
               return (
-                <div className='search-history' key={i}>
+                <div className='search-history' key={index}>
                   <div style={{ width: '-webkit-fill-available' }}>
-                    <div className='md-text'>{item.country}</div>
+                    <div className='md-text'>{`${item.city}, ${item.country}`}</div>
                     <div className='sm-text'>{item.date}</div>
                   </div>
-                  <div className='hollow-cirle'>
+                  <button className='hollow-cirle' onClick={()=>handleOnClickSearchHistoryButton(index)}>
                     <AiOutlineSearch color='rgba(255, 255, 255, 0.4)' size={20} style={{top: '6px', position:'relative', left:'6px' }}/>
-                  </div>
-                  <div className='hollow-cirle'>
+                  </button>
+                  <div className='hollow-cirle' onClick={()=>handleOnClickDeleteButton(index)}>
                     <MdDelete color='rgba(255, 255, 255, 0.4)' size={20} style={{top: '6px', position:'relative', left:'6px' }}/>
                   </div>
                 </div>
