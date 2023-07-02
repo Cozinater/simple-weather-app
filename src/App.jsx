@@ -127,8 +127,10 @@ function App() {
               }</div>
               <div className='md-text'>{`${curWeatherData.city}, ${curWeatherData.country}`}</div>
             </div>
+            <div style={{position: 'absolute',float: 'right',zIndex: 10,marginLeft: 'auto', right: '64px',top: '120px'}}>
+            <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' /></div>
             <div className='weather-container-right'>
-              <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' />
+              {/* <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' /> */}
               <div className='weather-right'>
                 <div className='md-text'>{curWeatherData.weather}</div>
                 <div className='md-text'>{`Humidity: ${curWeatherData.humidity}%`}</div>
