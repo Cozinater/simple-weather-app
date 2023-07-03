@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-// import reactLogo from './assets/react.svg';
-// import viteLogo from '/vite.svg';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { MdDelete } from 'react-icons/md';
-import { roundTempToNearestDegree, getCurrentDateStr } from './utils/helperFunctions';
+import { getCurrentDateStr } from './utils/helperFunctions';
+import PhoneWeatherData from './components/PhoneWeatherData';
+import DesktopWeatherData from './components/DesktopWeatherData';
 import './App.scss';
 
 function App() {
-  // React Hooks
+  // Defining React Hooks and const
+  const BREAKPOINT = 800;
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [searchHistory, setSearchHistory] = useState([]); // Stores list of search history
   const [searchValue, setSearchValue] = useState(''); // text in search bar
   const [error, setError] = useState(''); // Error Message
@@ -23,8 +25,8 @@ function App() {
     curDateStr: '',
   });
 
-  // Fetch singapore weather data and display when the webpage is first loaded
   useEffect(() => {
+    // Fetch singapore weather data and display when the webpage is first loaded
     axios
       .get(
         `https://api.openweathermap.org/data/2.5/weather?q=${curWeatherData.city}&appid=${
@@ -51,6 +53,13 @@ function App() {
           setError('Country/City cannot be found!');
         }
       });
+
+    // Handle changes to window size
+    const handleWindowResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleWindowResize);
+
+    // Return a function from the effect that removes the event listener
+    return () => window.removeEventListener('resize', handleWindowResize);
   }, []);
 
   const fetchData = (cityCountry, shdAddToSearchHistory) => {
@@ -124,12 +133,7 @@ function App() {
             <div className='search-label sm-text' style={{ margin: '0px', width: '98.5%' }}>
               Country / City
             </div>
-            <input
-              type='text'
-              className='search-bar'
-              style={{ width: '98.5%', padding: '0px 0px 0px 8px' }}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
+            <input type='text' className='search-bar' onChange={(e) => setSearchValue(e.target.value)} />
             <div className='error md-text'>{error}</div>
           </div>
 
@@ -139,35 +143,11 @@ function App() {
         </div>
 
         <div className='info-container'>
-          <div className='weather-container'>
-            <div className='weather-container-left'>
-              <div className='md-text'>Today&apos;s Weather</div>
-              <div className='lg-text'>{`${roundTempToNearestDegree(curWeatherData.temp)}°`}</div>
-              <div className='md-text'>{`H: ${roundTempToNearestDegree(curWeatherData.temp_max)}°
-              L: ${roundTempToNearestDegree(curWeatherData.temp_min)}°`}</div>
-              <div className='md-text'>{`${curWeatherData.city}, ${curWeatherData.country}`}</div>
-            </div>
-            <div
-              style={{
-                position: 'absolute',
-                float: 'right',
-                zIndex: 10,
-                marginLeft: 'auto',
-                right: '64px',
-                top: '120px',
-              }}
-            >
-              <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' />
-            </div>
-            <div className='weather-container-right'>
-              {/* <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' /> */}
-              <div className='weather-right'>
-                <div className='md-text'>{curWeatherData.weather}</div>
-                <div className='md-text'>{`Humidity: ${curWeatherData.humidity}%`}</div>
-                <div className='md-text'>{curWeatherData.curDateStr}</div>
-              </div>
-            </div>
-          </div>
+          {windowWidth < BREAKPOINT ? (
+            <PhoneWeatherData curWeatherData={curWeatherData} />
+          ) : (
+            <DesktopWeatherData curWeatherData={curWeatherData} />
+          )}
 
           <div className='search-history-container'>
             <div className='md-text'>Search History</div>
@@ -176,14 +156,25 @@ function App() {
               {searchHistory.map((item, index) => {
                 return (
                   <div className='search-history' key={index}>
-                    <div style={{ width: '-webkit-fill-available' }}>
-                      <div className='md-text'>{`${item.city}, ${item.country}`}</div>
-                      <div className='sm-text'>{item.curDateStr}</div>
-                    </div>
-                    <button className='hollow-cirle' onClick={() => handleOnClickSearchHistoryButton(index)}>
+                    {windowWidth < BREAKPOINT ? (
+                      <div style={{ width: '-webkit-fill-available' }}>
+                        <div className='md-text'>{`${item.city}, ${item.country}`}</div>
+                        <div className='sm-text'>{item.curDateStr}</div>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ width: '-webkit-fill-available' }}>
+                          <div className='md-text'>{`${item.city}, ${item.country}`}</div>
+                        </div>
+                        <div className='sm-text' style={{ fontSize: '12px', width: '200px' }}>
+                          {item.curDateStr}
+                        </div>
+                      </>
+                    )}
+                    <button className='cirle-button' onClick={() => handleOnClickSearchHistoryButton(index)}>
                       <AiOutlineSearch color='rgba(255, 255, 255, 0.4)' size={20} />
                     </button>
-                    <button className='hollow-cirle' onClick={() => handleOnClickDeleteButton(index)}>
+                    <button className='cirle-button' onClick={() => handleOnClickDeleteButton(index)}>
                       <MdDelete color='rgba(255, 255, 255, 0.4)' size={20} />
                     </button>
                   </div>
