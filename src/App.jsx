@@ -9,7 +9,7 @@ import './App.scss';
 
 function App() {
   // Defining React Hooks and const
-  const BREAKPOINT = 800;
+  const BREAKPOINT = 641;
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [searchHistory, setSearchHistory] = useState([]); // Stores list of search history
   const [searchValue, setSearchValue] = useState(''); // text in search bar
@@ -77,13 +77,13 @@ function App() {
           temp_min: data.main.temp_min,
           humidity: data.main.humidity,
           city: data.name,
-          country: data.sys.country,
+          country: data.sys.country || '',
           weather: data.weather[0].main,
           curDateStr: getCurrentDateStr(),
         });
         setError('');
         shdAddToSearchHistory &&
-          addToSearchHistory({ city: data.name, country: data.sys.country, curDateStr: getCurrentDateStr() });
+          addToSearchHistory({ city: data.name || '', country: data.sys.country, curDateStr: getCurrentDateStr() });
       })
       .catch((error) => {
         // handle errors
@@ -141,7 +141,9 @@ function App() {
             <AiOutlineSearch color='white' size={25} />
           </button>
         </div>
-
+        <div className='img-container'>
+          <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' />
+        </div>
         <div className='info-container'>
           {windowWidth < BREAKPOINT ? (
             <PhoneWeatherData curWeatherData={curWeatherData} />

@@ -16,18 +16,6 @@ const PhoneWeatherData = ({ curWeatherData }) => {
           <b>{`${city}, ${country}`}</b>
         </div>
       </div>
-      <div
-        style={{
-          position: 'absolute',
-          float: 'right',
-          zIndex: 10,
-          marginLeft: 'auto',
-          right: '64px',
-          top: '12px',
-        }}
-      >
-        <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' />
-      </div>
       <div className='weather-container-right'>
         {/* <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' /> */}
         <div className='weather-right'>
