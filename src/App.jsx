@@ -142,7 +142,7 @@ function App() {
           </button>
         </div>
         <div className='img-container'>
-          <img src='/src/assets/sun.png' alt='clouds' width='150px' className='img-container' />
+          <img src='/sun.png' alt='clouds' width='150px' className='img-container' />
         </div>
         <div className='info-container'>
           {windowWidth < BREAKPOINT ? (
