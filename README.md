@@ -1,5 +1,5 @@
 # Simple Weather APP
-The web applciation was written on React.js using Vite. The API from Open weather Map is used to fetch the weather information to display in the application.  
+The web application was written on React.js using Vite. The API from Open weather Map is used to fetch the weather information to display in the application.  
 
 # Getting Started
 1. Type `npm i` to install all of the nessary packages.
